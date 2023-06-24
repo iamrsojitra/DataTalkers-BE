@@ -16,7 +16,7 @@
         "editor.defaultFormatter": "vscode.css-language-features"
     },
     "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features",
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",
@@ -42,7 +42,9 @@
     },
     "html.format.extraLiners": "",
     "cSpell.words": [
-        "commitlint"
+        "commitlint",
+        "Dbtalk",
+        "OPENAI"
     ],
     "editor.formatOnSave": true,
     "docwriter.style": "Auto-detect"
