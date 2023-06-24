@@ -1,5 +1,7 @@
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { AxiosResponse } from 'axios';
+import { map } from 'rxjs';
 
 import { AIService } from './ai.service';
 import { AIPromptDTO } from './dto/ai.dto';
@@ -17,10 +19,10 @@ export class AIController {
   })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
   generateResponse(@Body('prompt') prompt: string) {
-    return { hi: 'hello' };
-    // return this.aIService
-    //   .generateResponse(prompt)
-    //   .pipe(map((response: AxiosResponse) => response));
+    return this.aIService
+      .generateResponse(prompt)
+      .pipe(
+        map((response: AxiosResponse) => response.data.choices[0].text.trim()),
+      );
   }
-  // response.data.choices[0].text.trim()
 }

@@ -1,7 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AxiosResponse } from 'axios';
-import { map } from 'rxjs';
+import { TokenDTO } from 'src/dbtalk/dto/ai.dto';
 import { DatabaseService } from './database.service';
 import { DatabaseDTO } from './dto/database.dto';
 
@@ -18,9 +17,24 @@ export class DatabaseController {
   })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
   @HttpCode(HttpStatus.OK)
-  generateResponse(@Body() databaseDTO: DatabaseDTO) {
+  connectDB(@Body() databaseDTO: DatabaseDTO) {
     return this.databaseService
       .connect(databaseDTO)
-      .pipe(map((response: AxiosResponse) => response));
+      .then(() => this.databaseService.encrypt(JSON.stringify(databaseDTO)));
+  }
+
+  @Post('/db-test')
+  @ApiOperation({ summary: 'Test Guard' })
+  @ApiBody({ type: TokenDTO })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The record has been successfully created.',
+  })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
+  async dbTest(@Body('token') token: string) {
+    return {
+      token,
+      data: await this.databaseService.dtSource.query('select * from student'),
+    };
   }
 }
