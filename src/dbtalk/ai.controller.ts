@@ -1,4 +1,10 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -28,6 +34,13 @@ export class AIController {
   })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
   generateResponse(@Body('prompt') prompt: string) {
-    return this.aIService.generateResponse(prompt);
+    return this.aIService.generateResponse(prompt).catch(() => {
+      throw new HttpException(
+        {
+          message: 'Try Different prompt',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    });
   }
 }
