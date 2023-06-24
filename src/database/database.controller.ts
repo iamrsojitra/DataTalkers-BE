@@ -23,7 +23,7 @@ export class DatabaseController {
       'If connection done successfully then it will return accessToken',
     schema: {
       example: {
-        accessToken: 'shdfjgs',
+        accessToken: '<access_token>',
       },
     },
   })

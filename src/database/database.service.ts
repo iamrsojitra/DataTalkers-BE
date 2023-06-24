@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 import {
@@ -36,19 +36,10 @@ export class DatabaseService {
   }
 
   connect(databaseDTO: DatabaseDTO) {
-    try {
-      const AppDataSource = new DataSource({
-        type: 'mysql',
-        ...databaseDTO,
-      });
-      return AppDataSource.initialize();
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: 'Invalid Database Credentials',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const AppDataSource = new DataSource({
+      type: 'mysql',
+      ...databaseDTO,
+    });
+    return AppDataSource.initialize();
   }
 }
