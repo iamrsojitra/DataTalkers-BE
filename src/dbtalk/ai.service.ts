@@ -9,8 +9,11 @@ export class AIService {
   constructor(private databaseService: DatabaseService) {}
 
   async generateResponse(prompt: string) {
+    const allTables = await this.databaseService.dtSource.query('show tables;');
+
     const db = await SqlDatabase.fromDataSourceParams({
       appDataSource: this.databaseService.dtSource,
+      includesTables: allTables.map((tbl) => Object.values(tbl)[0]),
     });
 
     const chain = new SqlDatabaseChain({

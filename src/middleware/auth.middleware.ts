@@ -34,6 +34,9 @@ export class AuthMiddleware implements NestMiddleware {
     this.databaseService
       .connect(JSON.parse(tokenData))
       .then((dtSource) => {
+        if (this.databaseService.dtSource) {
+          this.databaseService.dtSource.destroy();
+        }
         this.databaseService.dtSource = dtSource;
         next();
       })
