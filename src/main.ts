@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('Data Talkers API')
     .setDescription('Chat with your Database in plain english')
     .setVersion('1.0')

@@ -1,4 +1,3 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { SqlDatabaseChain } from 'langchain/chains';
 import { OpenAI } from 'langchain/llms/openai';
@@ -7,15 +6,7 @@ import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class AIService {
-  apiKey: string;
-  apiUrl: string;
-  constructor(
-    private readonly httpService: HttpService,
-    private databaseService: DatabaseService,
-  ) {
-    this.apiKey = process.env.OPENAI_API_KEY;
-    this.apiUrl = 'https://api.openai.com/v1/completions';
-  }
+  constructor(private databaseService: DatabaseService) {}
 
   async generateResponse(prompt: string) {
     const db = await SqlDatabase.fromDataSourceParams({

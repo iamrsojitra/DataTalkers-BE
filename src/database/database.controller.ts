@@ -1,6 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { TokenDTO } from 'src/dbtalk/dto/ai.dto';
 import { DatabaseService } from './database.service';
 import { DatabaseDTO } from './dto/database.dto';
 
@@ -13,28 +19,33 @@ export class DatabaseController {
   @ApiBody({ type: DatabaseDTO })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'The Connection success.',
+    description:
+      'If connection done successfully then it will return accessToken',
+    schema: {
+      example: {
+        accessToken: 'shdfjgs',
+      },
+    },
   })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
   @HttpCode(HttpStatus.OK)
   connectDB(@Body() databaseDTO: DatabaseDTO) {
     return this.databaseService
       .connect(databaseDTO)
-      .then(() => this.databaseService.encrypt(JSON.stringify(databaseDTO)));
-  }
-
-  @Post('/db-test')
-  @ApiOperation({ summary: 'Test Guard' })
-  @ApiBody({ type: TokenDTO })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'The record has been successfully created.',
-  })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
-  async dbTest(@Body('token') token: string) {
-    return {
-      token,
-      data: await this.databaseService.dtSource.query('select * from student'),
-    };
+      .then(() => {
+        return {
+          accessToken: this.databaseService.encrypt(
+            JSON.stringify(databaseDTO),
+          ),
+        };
+      })
+      .catch(() => {
+        throw new HttpException(
+          {
+            message: 'Invalid Database Credentials',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      });
   }
 }

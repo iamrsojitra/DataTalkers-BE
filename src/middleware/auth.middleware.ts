@@ -1,14 +1,34 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NestMiddleware,
+} from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   constructor(private databaseService: DatabaseService) {}
 
-  use(req: any, _: any, next: () => void) {
-    const token = req.body.token.split(' ')[1];
+  use(req: Request, _: Response, next: NextFunction) {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+      throw new HttpException(
+        {
+          message: 'Token is required',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const token = authorization.split(' ')[1];
     if (!token) {
-      throw new Error('Token is required');
+      throw new HttpException(
+        {
+          message: 'Token is required',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
     const tokenData = this.databaseService.decrypt(token);
     this.databaseService
@@ -19,7 +39,12 @@ export class AuthMiddleware implements NestMiddleware {
       })
       .catch((e) => {
         console.log(e);
-        throw new Error('Token is required');
+        throw new HttpException(
+          {
+            message: 'Invalid Database Credentials',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
       });
   }
 }
