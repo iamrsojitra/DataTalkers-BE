@@ -1,34 +1,34 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { AxiosResponse } from 'axios';
-import { Observable } from 'rxjs';
+import { SqlDatabaseChain } from 'langchain/chains';
+import { OpenAI } from 'langchain/llms/openai';
+import { SqlDatabase } from 'langchain/sql_db';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class AIService {
   apiKey: string;
   apiUrl: string;
-  constructor(private readonly httpService: HttpService) {
+  constructor(
+    private readonly httpService: HttpService,
+    private databaseService: DatabaseService,
+  ) {
     this.apiKey = process.env.OPENAI_API_KEY;
     this.apiUrl = 'https://api.openai.com/v1/completions';
   }
 
-  generateResponse(prompt: string): Observable<AxiosResponse> {
-    const data = {
-      prompt: prompt,
-      model: 'text-davinci-003',
-      temperature: 0.9,
-      max_tokens: 150,
-      top_p: 1,
-      frequency_penalty: 0.0,
-      presence_penalty: 0.6,
-      stop: [' Human:', ' AI:'],
-    };
+  async generateResponse(prompt: string) {
+    const db = await SqlDatabase.fromDataSourceParams({
+      appDataSource: this.databaseService.dtSource,
+    });
 
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${this.apiKey}`,
-    };
+    const chain = new SqlDatabaseChain({
+      llm: new OpenAI({ temperature: 0 }),
+      database: db,
+      sqlOutputKey: 'sql',
+    });
 
-    return this.httpService.post(this.apiUrl, data, { headers: headers });
+    const res = await chain.call({ query: prompt });
+    return res;
   }
 }
