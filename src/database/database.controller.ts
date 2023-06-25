@@ -1,12 +1,18 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpException,
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { DatabaseService } from './database.service';
 import { DatabaseDTO } from './dto/database.dto';
 
@@ -39,6 +45,31 @@ export class DatabaseController {
           ),
         };
       })
+      .catch(() => {
+        throw new HttpException(
+          {
+            message: 'Invalid Database Credentials',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      });
+  }
+
+  @ApiBearerAuth()
+  @Get('show-tables')
+  @ApiOperation({ summary: 'List database tables' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List database tables',
+    schema: {
+      example: ['table1', 'table2'],
+    },
+  })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
+  async showTables() {
+    return this.databaseService.dtSource
+      .query('show tables;')
+      .then((allTables) => allTables.map((tbl) => Object.values(tbl)[0]))
       .catch(() => {
         throw new HttpException(
           {
